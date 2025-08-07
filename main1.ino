@@ -28,7 +28,7 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 #define MAINCOLOR 1 // drawings
 
 // For mood type switch
-#define DEFAULT 0
+#define DEFAULT_EYE 0
 #define TIRED 1
 #define ANGRY 2
 #define HAPPY 3
@@ -646,6 +646,7 @@ unsigned long eventTimer; // will save the timestamps
 bool event1wasPlayed = 0; // flag variables
 bool event2wasPlayed = 0;
 bool event3wasPlayed = 0;
+bool event4wasPlayed = 0;
 
 
 void setup() {
@@ -660,7 +661,7 @@ void setup() {
 
   // Startup robo eyes
   roboEyes.begin(SCREEN_WIDTH, SCREEN_HEIGHT, 100); // screen-width, screen-height, max framerate - 60-100fps are good for smooth animations
-  roboEyes.setPosition(DEFAULT); // eye position should be middle center
+  roboEyes.setPosition(DEFAULT_EYE); // eye position should be middle center
   roboEyes.close(); // start with closed eyes 
   
   eventTimer = millis(); // start event timer from here
@@ -669,37 +670,48 @@ void setup() {
 
 
 void loop() {
- roboEyes.update(); // update eyes drawings
+  roboEyes.update(); // Cập nhật hiển thị mắt
 
-  // LOOPED ANIMATION SEQUENCE
-  // Do once after defined number of milliseconds
-  if(millis() >= eventTimer+2000 && event1wasPlayed == 0){
-    event1wasPlayed = 1; // flag variable to make sure the event will only be handled once
-    roboEyes.open(); // open eyes 
+  // Animation tuần tự theo thời gian tính từ eventTimer
+
+  // Bước 1: Sau 2 giây mở mắt
+  if (millis() >= eventTimer + 2000 && event1wasPlayed == 0) {
+    event1wasPlayed = 1;
+    roboEyes.open();
   }
-  // Do once after defined number of milliseconds
-  if(millis() >= eventTimer+4000 && event2wasPlayed == 0){
-    event2wasPlayed = 1; // flag variable to make sure the event will only be handled once
+
+  // Bước 2: Sau 4 giây, biểu cảm HAPPY, cười và ngơ
+  if (millis() >= eventTimer + 4000 && event2wasPlayed == 0) {
+    event2wasPlayed = 1;
     roboEyes.setMood(HAPPY);
     roboEyes.anim_laugh();
-    //roboEyes.anim_confused();
+    roboEyes.anim_confused();
   }
-  // Do once after defined number of milliseconds
-  if(millis() >= eventTimer+6000 && event3wasPlayed == 0){
-    event3wasPlayed = 1; // flag variable to make sure the event will only be handled once
+
+  // Bước 3: Sau 6 giây, biểu cảm TIRED và chớp mắt
+  if (millis() >= eventTimer + 6000 && event3wasPlayed == 0) {
+    event3wasPlayed = 1;
     roboEyes.setMood(TIRED);
-    //roboEyes.blink();
+    roboEyes.blink();
   }
-  // Do once after defined number of milliseconds, then reset timer and flags to restart the whole animation sequence
-  if(millis() >= eventTimer+8000){
-    roboEyes.close(); // close eyes again
-    roboEyes.setMood(DEFAULT);
-    // Reset the timer and the event flags to restart the whole "complex animation loop"
-    eventTimer = millis(); // reset timer
-    event1wasPlayed = 0; // reset flags
+
+  // Bước 4: Sau 7 giây, biểu cảm ANGRY và chớp mắt
+  if (millis() >= eventTimer + 7000 && event4wasPlayed == 0) {
+    event4wasPlayed = 1;
+    roboEyes.setMood(ANGRY);
+    roboEyes.blink();
+  }
+
+  // Kết thúc vòng lặp: Sau 8 giây, đóng mắt, đặt lại trạng thái và reset cờ
+  if (millis() >= eventTimer + 8000) {
+    roboEyes.close();
+    roboEyes.setMood(DEFAULT_EYE);
+
+    // Reset lại timer và cờ để chạy vòng tiếp theo
+    eventTimer = millis();
+    event1wasPlayed = 0;
     event2wasPlayed = 0;
     event3wasPlayed = 0;
+    event4wasPlayed = 0;
   }
-  // END OF LOOPED ANIMATION SEQUENCE
-
-} // end of main loop
+}
